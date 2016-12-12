@@ -42,6 +42,7 @@ if (reset) {
 // ***************************************************************//
 // listening to button click and storing user choice
 $(".icon").on("click", function() {
+    $("#rps").html("Selected Image: " + $(this).data("icon"));
     if (!madeChoice) {
         choice = $(this).data("icon");
         console.log("my selection: " + choice);

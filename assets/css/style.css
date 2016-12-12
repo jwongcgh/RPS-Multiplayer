@@ -1,0 +1,59 @@
+html, body {
+	width: 960px;
+	margin: 0 auto;
+	box-sizing: border-box;
+}
+
+
+.container-fluid {
+	/*align-content: center;*/
+
+}
+
+
+.column {
+	/*display: flex;*/
+	/*max-height: 350px;*/
+	/*align-content: center;*/
+	border: dotted 1px blue;
+	width: 45%;
+	margin-right: 15px;
+	float: left;
+	/*overflow: auto;*/
+
+}
+
+#chat-field {
+	word-wrap: break-word;
+	overflow: auto;
+	height: 300px;
+	float: right;
+	border: dotted 1px green;
+	width: 95%;
+	margin: 0;
+	padding: 0 10px 0 10px;
+}
+
+.row {
+	float: left;
+	border: dotted 1px red;
+}
+
+
+.icon {
+	float: left;
+	border: 1px dotted blue;
+	width: 100px;
+	height: 100px;
+	margin: 15px;
+	/*position: absolute;*/
+}
+
+hr {
+	clear: both;
+
+}
+
+#wins, #loses, #winner {
+	border: dotted 1px blue;
+}

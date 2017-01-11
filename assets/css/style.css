@@ -22,6 +22,10 @@ html, body {
 	margin-bottom: 15px;
 }
 
+.separator {
+	visibility: hidden;
+}
+
 .column {
 	border: dotted 1px blue;
 	width: 45%;

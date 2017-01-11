@@ -1,26 +1,71 @@
 html, body {
-	width: 960px;
+	width: 900px;
 	margin: 0 auto;
 	box-sizing: border-box;
 }
 
-
-.container-fluid {
-	/*align-content: center;*/
-
+.wrapper {
+	max-width: 900px;
+	/*border: dotted 1px red;*/
 }
 
+.container-fluid {
+	clear: both;
+}
+
+.title {
+	text-align: center;
+	max-width: 100%;
+	padding: 25px;
+	font-style: bold;
+	font-size: 2em;
+	margin-bottom: 15px;
+}
 
 .column {
-	/*display: flex;*/
-	/*max-height: 350px;*/
-	/*align-content: center;*/
 	border: dotted 1px blue;
 	width: 45%;
 	margin-right: 15px;
 	float: left;
-	/*overflow: auto;*/
+	padding-bottom: 10px;
+	margin-bottom: 15px;
+}
 
+h3 {
+	font-size: 1.1em;
+	padding: 5px;
+}
+
+
+ul, li {
+	margin-left: 25px;
+}
+
+.game {
+	text-align: center;
+	margin-left: 25px;
+
+}
+
+#winner {
+	height: 25px;
+	font-size: 1.5em;
+	color: blue;
+}
+
+.chatroom {
+	float: right;
+	margin-right: 25px;
+	/*text-align: center;*/
+}
+
+#status {
+	text-align: center;
+	padding-top: 15px;
+}
+
+#chatInputs {
+	margin-left: 25px;
 }
 
 #chat-field {
@@ -28,32 +73,47 @@ html, body {
 	overflow: auto;
 	height: 300px;
 	float: right;
-	border: dotted 1px green;
+	/*width: 85%;*/
+	/*border: dotted 1px green;*/
 	width: 95%;
-	margin: 0;
+	margin-top: 15px;
+	margin-bottom: 25px;
 	padding: 0 10px 0 10px;
 }
 
+#message {
+	width: 225px;
+}
+
 .row {
-	float: left;
-	border: dotted 1px red;
+	/*border: dotted 1px red;*/
 }
 
 
 .icon {
 	float: left;
-	border: 1px dotted blue;
+	/*border: 1px dotted blue;*/
 	width: 100px;
 	height: 100px;
 	margin: 15px;
-	/*position: absolute;*/
 }
 
 hr {
 	clear: both;
+	max-width: 67%;
 
 }
 
-#wins, #loses, #winner {
-	border: dotted 1px blue;
+#wins, #loses {
+	padding: 5px;
+	/*border: dotted 1px blue;*/
+}
+
+#inst {
+	margin-top: 25px;
+	clear: both;
+}
+
+p {
+	margin-left: 15px;
 }

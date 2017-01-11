@@ -1,4 +1,3 @@
-
 // Initialize Firebase
 var config = {
     apiKey: "AIzaSyD-T5JrEesXd4Ce9mIaROEGlM9nq0BkOw0",
@@ -10,10 +9,12 @@ var config = {
 firebase.initializeApp(config);
 
 // Reference to the database service
-var fireDatabase = firebase.database();
+var database = firebase.database();
 
 // ***************************************************************//
 
+// variables declaration
+// need to clean up data
 var iconArr = ["s", "p", "r"]; // player options
 var choice = ""; // players choice/selection
 var madeChoice = false; // keeps track if user submitted a choice
@@ -25,395 +26,411 @@ var choiceArr = []; // stores choices from both players
 var reset = true; // access random id generator
 var local_choice; // when reloading choice
 var remote_choice; // when reloading choice
-var local_key;  // not used
+var local_key; // not used
 var remote_key; // not used
 var wins = 0;
 var losses = 0;
+var remote_id;
+statsUpdate = false;
+var random;
+var player = "offline";
 
 // ***************************************************************//
 
-// generate player id randomly, accessed only if reset is true
-if (reset) {
-    var random = Math.round(Math.random() * 10000);
-    console.log("random: " + random);
-    reset = false;
-}
-
-// ***************************************************************//
-// listening to button click and storing user choice
-$(".icon").on("click", function() {
-    $("#rps").html("Selected Image: " + $(this).data("icon"));
-    if (!madeChoice) {
-        choice = $(this).data("icon");
-        console.log("my selection: " + choice);
-    } else {
-        choice = "";
-        console.log("not recording onclick: " + choice);
-        console.log("my selection: " + choice);
-        return
-    }
-}); // end .icon on-click
-
-$("#submit").on("click", function() {
-    if (localCount == 1) {
-        console.log("you already played");
-    } else
-
-    if (choice.match(/[rps]/)) {
-
-        // store local player id
-        localStorage.clear();
-        localStorage.setItem("random", random);
-        console.log("stored random: " + localStorage.getItem("random"));
-
-        // displays user choice in window
-        $("#thisPlayer").html("Your choice: " + choice);
-
-        // prevents change of choice value for the duration of this match
-        madeChoice = true;
-        // go-to update remote database
-        saveChoice();
-    } else {
-        console.log("selection is blank");
-        return
-    }
-});
-
-// ***************************************************************//   
-// ***************************************************************//
-
-// updating database
-
-function saveChoice() {
+$("document").ready(function() {
 
 
-    localCount++;
-    // Note: firt assign local_choice, otherwise local_choice is undefined until data or page refresh
-    local_choice = choice;
-    console.log("first assign local choice: " + local_choice);
-    console.log("localCount: " + localCount);
-    // console.log("choice sent to database: " + choice);
+    for (var z=4; z < 7; z++) {
+                $("#" + z).css("opacity", 0.2);
+            }
 
+    // localStorage.clear();
+    // will force new game
 
-    // "/players/" + random
-    fireDatabase.ref("/players/").push({
-        random: random,
-        localCount: localCount, // keep - used line 130 snapshot
-        choice: choice,
-        wins: wins,
-        losses: losses, // important - keep
+    // check local storage for player
+    // if (localStorage.getItem("random") !== null) {
+    //     console.log("random in local storage: " + localStorage.getItem("random"));
+    //     // newPlayer();
+    //     checkPlayer();
+    // } else {
+    //     console.log("local storage is empty");
+    //     newPlayer();
+    // }
+
+    // window close or refresh resets game
+    window.addEventListener("beforeunload", function() {
+        database.ref('/players/' + random).remove();
+        database.ref('/message/').remove();
+        database.ref("players/" + "reset").update({
+            reset: true,
+        });
     });
 
-    choice = "";
-}
+    // start game    
+    newPlayer();
 
-// ***************************************************************//   
-// ***************************************************************//
-// ***************************************************************//
-// reading database, adding user choices to array as they are sent by user via input click
-
-fireDatabase.ref('/players/').on("child_added", function(childSnapshot) {
-    // pushes choices in database to choices array
-    // increments count variable by one everytime a choice has been pushed into database
-    // once count = 2, no more count entries allowed
-
-    choiceArr.push(childSnapshot.val().choice);
-    console.log("pushed to choice array: " + childSnapshot.val().choice);
-    count++;
-
-    // console.log("count/number-of-entries: " + count);
-    console.log("choiceArr: " + choiceArr)
-
-    // go-to who's who in game for window display 
-    if (count == 2) {
-        console.log("both played");
-        identity();
-    }
-
-}, function(errorObject) {
-    console.log("Errors handled: " + errorObject.code);
-}); // end of childSnapshot
-
-// ***************************************************************// 
-
-// check who is local-player and who is remote-player, shows data if both played
-function identity() {
-    console.log("count value is: " + count);
-    console.log("local_choice: " + local_choice);
-    // if (count == 2) {    
-    // console.log("both played");
-    if (local_choice == choiceArr[0]) {
-        remote_choice = choiceArr[1];
-        $("#thisPlayer").html("Your choice: " + choiceArr[0]);
-        $("#otherPlayer").html("Other player: " + choiceArr[1]);     // do not show local player
-
-        // highlighting corresponding image
-        for (var j = 0; j < iconArr.length; j++) {
-            if (choiceArr[0] !== iconArr[j]) {
-                var fade_icon = "#" + iconArr[j] + 1;
-                console.log("# + iconArr[j] + 1: " + fade_icon);
-                $(fade_icon).fadeTo(250, 0.1);
-            }
-            if (choiceArr[1] !== iconArr[j]) {
-                var fade_icon = "#" + iconArr[j] + 2;
-                console.log("# + iconArr[j] + 2: " + fade_icon);
-                $(fade_icon).fadeTo(250, 0.1);
-            }
-        } // end for loop
-
-    } else if (local_choice == choiceArr[1]) {
-        remote_choice = choiceArr[0];
-        $("#thisPlayer").html("Your choice: " + choiceArr[1]);
-        $("#otherPlayer").html("Other player: " + choiceArr[0]);     // do not show local player
-
-        // highlighting corresponding image
-        for (var k = 0; k < iconArr.length; k++) {
-            if (choiceArr[1] !== iconArr[k]) {
-                var fade_icon = "#" + iconArr[k] + 1;
-                console.log("# + iconArr[k] + 1: " + fade_icon);
-                $(fade_icon).css("opacity", 0.1);
-            }
-            if (choiceArr[0] !== iconArr[k]) {
-                var fade_icon = "#" + iconArr[k] + 2;
-                console.log("# + iconArr[k] + 2: " + fade_icon);
-                $(fade_icon).css("opacity", 0.1);
-            }
-        } // end for loop
-    }
-    // }   // end if count == 2
-    outcome();
-
-} // end identity function
-// ***************************************************************// 
-
-function outcome() {
-
-    console.log("local choice: " + local_choice);
-    console.log("remote choice: " + remote_choice);
-
-
-
-
-    if (local_choice == remote_choice) {
-        console.log("is a tie");
-        $("#winner").html("Match is a tie");
-    } else if (
-        (local_choice == "r" && remote_choice == "s") || 
-        (local_choice == "s" && remote_choice == "p") ||
-        (local_choice == "p" && remote_choice == "r")
-        ) {
-        wins++;
-        fireDatabase.ref('/stats/').update({
-            wins: wins,
+    // generate player id randomly
+    function newPlayer() {
+    // if (reset) {
+        random = Math.round(Math.random() * 10000);
+        console.log("random: " + random);
+        // create local player database file with generated random id
+        database.ref("players/" + random).update({
             random: random,
-            losses: losses,
-        })
-        console.log("local wins");
-        $("#wins").html("Wins: " + wins);
-        $("#winner").html("Victory!!!");
+            wins: 0,
+            losses: 0,
+            choice: "",
+            player: "online",
+        });
+        // tracks reset via refresh or disconnection
+        database.ref("players/" + "reset").update({
+            reset: false,
+        });
 
-    }   else {
-        losses++;
-            $("#losses").html("Losses: " + losses);
-            $("#winner").html("You loss...");
-    }
+        // stores generated random id in local storage
+        localStorage.clear();
+            localStorage.setItem("random", random);
+            console.log("stored random: " + localStorage.getItem("random"));
+        // reset = false;
+        
+    // }
+}   // end new player 
 
+    // ***************************************************************//
 
-    var pauseGame = setTimeout(clearData, 7000);
-    // clearData()
-} // end outcome function
+    // listening to button click and storing user choice
+    $(".iconActive").on("click", function() {
+        $("#rps").html("Selected Image: " + $(this).data("icon"));
 
+        if (!madeChoice) {
+            choice = $(this).data("icon");
+            console.log("my selection: " + choice);
 
-// ***************************************************************//
-// read once
-// firebase.database().ref(1011).once('value').then(function(snapshot) {
-//   var choice = snapshot.val().choice;
-//   console.log("1011: " + choice);
-// });
-// ***************************************************************//
-
-// accessed only @ refresh or on return after exiting the browser
-// check local storage choice against database choice value
-var check = 0;
-var query = fireDatabase.ref('/players/').orderByKey();
-query.once("value")
-    .then(function(playedCheck) {
-            playedCheck.forEach(function(childSnapshot) {
-                    console.log("*****************");
-                    // playTemp stores choice value from database
-                    var user_id = childSnapshot.val().random;
-                    var user_id_local = localStorage.getItem("random");
-                    console.log("user_id: " + user_id);
-
-                    var choice_key = childSnapshot.val().choice;
-                    console.log("choice_key: " + choice_key);
-
-                    // if localstorage "played" match database, check is positive
-                    // first check if player exists
-                    if (localStorage.getItem("random") == user_id) {
-                        wins = childSnapshot.val().wins;
-                        $("#wins").html("Wins: " + wins);
-                        losses = childSnapshot.val().losses;
-                        $("#losses").html("Losses: " + losses);
-                        // then retrieve choice
-                        if (choice_key.match(/[rps]/)) {
-                            check++;
-                            local_choice = choice_key;
-                            local_key = childSnapshot.key;
-                            console.log("local_choice:" + choice_key);
-                            console.log("local_key: " + local_key);
-                            $("#thisPlayer").html("Your choice: " + choice_key);
-                            madeChoice = true;
-                        } // end choice_key
-
-                    } else {
-                        wins = childSnapshot.val().losses;
-                        $("#wins").html("Wins: " + wins);
-                        losses = childSnapshot.val().wins;
-                        $("#losses").html("Losses: " + losses);
-                        remote_choice = choice_key
-                        remote_key = childSnapshot.key;
-                        console.log("remote_choice: " + remote_choice)
-                        console.log("remote_key: " + remote_key)
-                    }
-                    // identity();
-                }) // end forEach function(childSnapshot)
-
-            if (check > 0) {
-                console.log("already played");
+        // @@@@@ highlight as icon is selected
+        for (i=1; i < 4; i++) {
+            if (i == choice) {
+                $("#" + i).css("opacity", 1);    // change to border highlight 
+                // $("#" + i).css({box-shadow: 1px 1px #91FF8B};
             } else {
-                console.log("did not play");
+                $("#" + i).css("opacity", 0.5);    // change to border highlight 
             }
-        } // end then function(playCheck)
-        ,
-        function(errorObject) {
-            console.log("Errors handled: " + errorObject.code);
-        });
+        }   // @@@@@ end of high-light icon for loop
 
-// retrieving lost stats
+        } else {
+            choice = "";
+            console.log("not recording onclick: " + choice);
+            console.log("my selection: " + choice);
+            return
+        }
+    }); // end .icon on-click
 
-fireDatabase.ref("stats").once('value').then(function(snapshot) {
-    var wins_key = snapshot.val().wins;
-    var user_id = snapshot.val().random;
-    console.log("stats random: " + user_id);
-    console.log("local random: " + localStorage.getItem("random"));
-    console.log("wins retrieve: " + wins_key);
-    if (localStorage.getItem("random") == user_id) { // ???????????
-        wins = snapshot.val().wins;
-        $("#wins").html("Wins: " + wins);
-        losses = snapshot.val().losses;
-        $("#losses").html("Losses: " + losses);
-    } // end choice_key
-    else {
-        wins = snapshot.val().losses;
-        $("#wins").html("Wins: " + wins);
-        losses = snapshot.val().wins;
-        $("#losses").html("Losses: " + losses);
-    }
+    // user submits selection
+    $("#submit").on("click", function() {
+        if (localCount == 1) {
+            console.log("you already played");
+        } else
 
-});
-// ***************************************************************//   
-// ***************************************************************//
-// ***************************************************************//
-// ***************************************************************//
+        // 
+        if (choice == 1 || choice == 2 || choice == 3) {
 
+            // displays user choice in window
+            $("#thisPlayer").html("Your choice: " + choice);
 
-// ***************************************************************//
-// ***************************************************************//
-// ***************************************************************//
-// if using clearData add a timer
+        // @@@@@ highlight user selection, fades away other choices
+        for (i=1; i < 4; i++) {
+            if (i == choice) {
+                $("#" + i).css("opacity", 1);
+            } else {
+                $("#" + i).css("opacity", 0);    // fade out only 
+            }
+        }   // end highlight for loop
 
-function clearData() {
+            // prevents change of choice value for the duration of this match
+            madeChoice = true;
 
-    fireDatabase.ref('/players/').remove();
+            localCount++;
+            // Note: firt assign local_choice, otherwise local_choice is undefined until data or page refresh
+            local_choice = choice;
+            console.log("first assign local choice: " + local_choice);
+            console.log("localCount: " + localCount);
+            // console.log("choice sent to database: " + choice);
 
-    madeChoice = false;
-    count = 0;
-    localCount = 0;
-    choiceArr = [];
-    check = 0;
-    local_choice = "";
-    remote_choice = "";
-
-    $("#thisPlayer").html("Your choice: " + "None selected");
-    $("#otherPlayer").html("Other player: " + "None selected");
-    $("#winner").html("");
-    for (var m = 0; m < iconArr.length; m++) {
-        $("#" + iconArr[m] + 1).css("opacity", 1);
-        $("#" + iconArr[m] + 2).css("opacity", 1);
-    } // end for loop
-
-} // end clear data function
-
-
-// ***************************************************************//
-// ***************************************************************//
-// ***************************************************************//
-// chat
-
-// working block 
-
-$("#chat").on("click", function() {
-    var message = $("#message").val().trim();
-    name = $("#name").val().trim();
-
-    // gets me the post key for each addition
-    //  newPostKey = firebase.database().ref().child('name').push().key;
-    // console.log("newPostKey: " + newPostKey);
-
-    if (message !== "") {
-        fireDatabase.ref('/message/').push({
-            name: name,
-            message: message,
-            dateAdded: firebase.database.ServerValue.TIMESTAMP
-        });
-
-        return false;
-    } // end on click chat button
-
-}); // end of #chat onclick
-
-// chat snapshot
-fireDatabase.ref('/message/').orderByChild("dateAdded").limitToLast(15)
-    .on("child_added", function(childSnapshot) {
-
-        // Change the HTML to reflect
-        console.log(childSnapshot.val().name);
-        console.log(childSnapshot.val().message);
-
-        // if (childSnapshot.val().name !== "") {
-        //     name = random;
-        // } else { 
-            name = childSnapshot.val().name;
-        // }
-
-        message = childSnapshot.val().message;
-
-        if (message !== "") {     
-            $("#chat-field").append('<p>' + name + ": " + message + '</p>');
-            $('#chat-field').animate({ scrollTop: 1000000 });
+            // go-to update remote database
+            saveRemote();
+        } else {
+            console.log("selection is blank");
+            return
         }
     });
 
+    // ***************************************************************//   
+    // ***************************************************************//
 
-// fireDatabase.ref().onDisconnect.update({
-//   onlineState: false,
-//   status: "I'm offline."
-// });
+    // updating database
+    function saveRemote() {
+
+        database.ref("/players/" + random).update({
+            random: random,
+            localCount: localCount,
+            choice: choice,
+            wins: wins,
+            losses: losses,
+        });
+
+        choice = "";
+
+    }
+
+    // window.addEventListener("beforeunload", function() {
+    //     database.ref("players/" + "reset").update({
+    //         reset: false,
+    //     });
+    //     // store id in localstorage
+    // });
+    // ***************************************************************//   
+    // ***************************************************************//
+    // ***************************************************************//
+    // reading database, adding user choices to array as they are submitted by user via input click
+
+    database.ref('/players/').on("child_changed", function(childSnapshot) {
+        
+        // reset if disconnected or refresh
+        reset = childSnapshot.val().reset;
+        console.log("reset child changed: " + reset);
+        if (reset) {
+            $("#chat-field").html("");
+            wins = 0;
+            losses = 0;
+            localStorage.clear();
+            $("#wins").html("Wins: " + wins);
+            $("#losses").html("Losses: " + losses);
+            $("#winner").html("");            
+        } else {
+            console.log("on child change no reset button");
+        }
+
+        // updates array containing choices made by users
+        if (madeChoice) {
+            choiceArr.push(childSnapshot.val().choice);
+            console.log("pushed to choice array: " + childSnapshot.val().choice);
+            console.log("choiceArr: " + choiceArr);
+            count++;
+            console.log("count/number-of-entries: " + count);
+
+            // count is 2 when both made their choice
+            if (count == 2) {
+                console.log("both played");
+                madeChoice = false;
+                // go-to who's who in game for window display 
+                identity();
+            }   // end count if statement
+        } else {
+            return
+        }
+
+    }, function(errorObject) {
+        console.log("Errors handled: " + errorObject.code);
+    }); // end of childSnapshot
 
 
-// clear chat field button
-$("#reset").on("click", function() {
+    // ***************************************************************// 
 
-    fireDatabase.ref('/message/').remove();
-    $("#chat-field").html("");
-    fireDatabase.ref('/stats/').remove();
-    clearData();
-    location.reload();
-    reset = false;
-    localStorage.clear();
+    // check who is local-player and who is remote-player, shows data if both played
+    function identity() {
+        console.log("count value is: " + count);
+        console.log("local_choice: " + local_choice);
+        
+        if (local_choice == choiceArr[0]) {
+            remote_choice = choiceArr[1];
+            console.log("identity remote choice: " + remote_choice);
+            $("#thisPlayer").html("Your choice: " + choiceArr[0]);
+            $("#otherPlayer").html("Other player: " + choiceArr[1]);
+
+        // highlights opponent's choice
+        for (var i=4; i < 7; i++) {
+            if (i - 3 == remote_choice) {
+                $("#" + i).css("opacity", 1);
+            } else {
+                $("#" + i).css("opacity", 0); 
+            }
+        } // end highlight opponent's choice
+        }
+        outcome();
+
+    } // end identity function
+    // ***************************************************************// 
+
+    function outcome() {
+
+        madeChoice = false;
+        console.log("local choice: " + local_choice);
+        console.log("remote choice: " + remote_choice);
+
+        if (local_choice == remote_choice) {
+            $("#winner").html("Match is a tie");
+        } else if (  
+            (local_choice == "3" && remote_choice == "1") ||
+            (local_choice == "1" && remote_choice == "2") ||
+            (local_choice == "2" && remote_choice == "3")
+        ) {
+            wins++;
+            database.ref("/players/" + random).update({
+            wins: wins,
+            });
+            
+            console.log("local wins");
+            $("#wins").html("Wins: " + wins);
+            $("#winner").html("Victory!!!");
+        } else if (
+            (local_choice == "1" && remote_choice == "3") ||
+            (local_choice == "2" && remote_choice == "1") ||
+            (local_choice == "3" && remote_choice == "2")
+        ){
+            losses++;
+            database.ref("/players/" + random).update({
+            losses: losses,
+            });
+            $("#losses").html("Losses: " + losses);
+            $("#winner").html("You loss...");
+        } 
+ 
+        var pauseGame = setTimeout(clearData, 5000);
+    } // end outcome function
+
+
+    
+    // ***************************************************************//   
+    // ***************************************************************//
+    // ***************************************************************//
+    // ***************************************************************//
+
+    // code not working yet
+
+function checkPlayer() {
+var query = database.ref('/players/').orderByKey();
+    query.once("value")
+        .then(function(playedCheck) {
+                playedCheck.forEach(function(childSnapshot) {
+                        console.log("*****************");
+                        // var user_id =childSnapshot.val().random;   
+                        // console.log("user_id: " + user_id);
+                        // var user_id_local = localStorage.getItem("random");
+                        // console.log("user_id_local: " + user_id_local);
+                        if (childSnapshot.child("random").exists()){
+                            var user_id =childSnapshot.val().random;   
+                            console.log("user_id: " + user_id);
+                            var user_id_local = localStorage.getItem("random");
+                            console.log("user_id_local: " + user_id_local);
+                            if (user_id == user_id_local) {
+                                console.log("user exists");
+                            }
+                        } else {
+                            newPlayer();
+                            console.log("new player")
+                        }
+}); // end for each
+});   // end playcheck
+}
+
+    
+    // ***************************************************************//   
+    // ***************************************************************//
+    // ***************************************************************//
+    // ***************************************************************//
+
+    // ***************************************************************//
+    // ***************************************************************//
+    // if using clearData add a timer
+
+    function clearData() {
+
+        madeChoice = false;
+        count = 0;
+        localCount = 0;
+        choiceArr = [];
+        check = 0;
+        local_choice = "";
+        remote_choice = "";
+
+        $("#thisPlayer").html("Your choice: " + "None selected");
+        $("#otherPlayer").html("Other player: " + "None selected");
+        $("#winner").html("Select and Submit");
+
+        for (var z=4; z < 7; z++) {
+                $("#" + z).css("opacity", 0.2);
+            }
+
+        for (var m = 1; m < 4; m++) {
+            $("#" + m).css("opacity", 1);  
+        } // end for loop
+
+        saveRemote();
+        
+    } // end clear data function
+
+
+    // ***************************************************************//
+    // ***************************************************************//
+    // ***************************************************************//
+    // chatroom 
+
+    $("#chat").on("click", function() {
+        var message = $("#message").val().trim();
+        name = $("#name").val().trim();
+
+        // if name is empty, player name is generated id number
+        if (name == "") {
+            name = random;
+        }
+
+
+        // check for empty message
+        if (message !== "") {
+            database.ref('/message/').push({
+                name: name,
+                message: message,
+                dateAdded: firebase.database.ServerValue.TIMESTAMP
+            });
+            $("#message").val("");
+            
+        } // end on click chat button
+        return false;
+    }); // end of #chat onclick
+
+    // chat snapshot
+    database.ref('/message/').orderByChild("dateAdded").limitToLast(15)
+        .on("child_added", function(childSnapshot) {
+
+            // Change the HTML to reflect
+            console.log(childSnapshot.val().name);
+            console.log(childSnapshot.val().message);
+
+            // if (childSnapshot.val().name !== "") {
+            //     name = random;
+            // } else { 
+            name = childSnapshot.val().name;
+            // }
+
+            message = childSnapshot.val().message;
+
+            if (message !== "") {
+                $("#chat-field").append('<p>' + name + ": " + message + '</p>');
+                $('#chat-field').animate({ scrollTop: 1000000 });
+            }
+        });
+
+    // clear chat field button
+    // $("#reset").on("click", function() {
+    //     database.ref("players/" + "reset").update({
+    //         reset: true,
+    //     });
+    //     // wins = 0;
+    //     // losses = 0;
+    //     // clearData();
+    // });
+
+    // ***************************************************************// 
+    // ***************************************************************// 
+    // ***************************************************************//
+
 });
-
-// ***************************************************************// 
-// ***************************************************************// 
-// ***************************************************************//

@@ -4,52 +4,74 @@
 <head>
     <title>Rock Paper Scissors v5</title>
     <link rel="stylesheet" type="text/css" href="assets/css/reset.css">
-    <!-- <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous"> -->
     <link rel="stylesheet" type="text/css" href="assets/css/style.css">
-    <script src="https://www.gstatic.com/firebasejs/3.6.3/firebase.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/3.6.4/firebase.js"></script>
 </head>
 
 <body>
-   
+
+<div class="wrapper"> 
 	<!-- div for three buttons to be clicked -->
-    
+    <div class = "row title">
+    	<h1>A Rock, Paper, Scissors Match</h1>
+    </div>
 
-    <div class=container>
-    <div class="column">
+<div class="container-fluid">
+    <div class="container">
+    <div class="column game">
         <div class="row">
-            <div class="icon icon1" id="r2" data-icon="r">r1</div>
+        	<div>
+        		<h3> Oponent's Choice </h3>
+        	</div>
+            <div class="icon" id="6">
+                <img src="assets/images/rock.jpg" alt="rock image">
+            </div>
+            <div class="icon" id="5">
+                <img src="assets/images/paper.jpg" alt="paper image">
+            </div>
+            <div class="icon" id="4">
+                <img src="assets/images/scissors.jpg" alt="scissors image">
+            </div>
+        </div>
+        <hr>
+        
+        <div id="winner"><span>_ _ _</span></div>
 
-            <div class="icon icon2" id="p2" data-icon="p">p1</div>
-            <div class="icon icon3" id="s2" data-icon="s">s1</div>
-        </div>
-        <!-- <hr>
-            <div></div>
-            <hr> -->
+        <hr>
         <div class="row">
-            <div class="icon icon4" id="r1" data-icon="r">r2</div>
-            <div class="icon icon5" id="p1" data-icon="p">p2</div>
-            <div class="icon icon6" id="s1" data-icon="s">s2</div>
+            <div class="icon iconActive" id="3" data-icon="3">
+                <img src="assets/images/rock.jpg" alt="rock image">
+            </div>
+            <div class="icon iconActive" id="2" data-icon="2">
+                <img src="assets/images/paper.jpg" alt="paper image">
+            </div>
+            <div class="icon iconActive" id="1" data-icon="1">
+                <img src="assets/images/scissors.jpg" alt="scissors image">
+            </div>
+            <div>
+        		<h3> Your Choice </h3>
+        	</div>
         </div>
-            <hr>
-            <div class="row">
-            <input type="submit" id="submit" value="submit">
+        <div class="row" id="buttonHolder">
+            <input type="submit" id="submit" value="submit your choice">
             <!-- <button id="reset">New Game</button> -->
         </div> 
         <hr>
         <div id="wins">Wins: 0</div>
         <div id="losses">Losses: 0</div>
-        <div id="winner"></div>
+        
         </div>  <!-- div end column -->
     </div>  <!-- end container -->
-    </div><!-- end column -->
-    <div class="column">
-        <div id="playerName">Player Name</div>
+    <!-- </div> -->
+    <!-- end column -->
+    <div class="column chatroom">
+        <div id="status">Chatroom</div>
+        <hr>
         <div id="chat-field">
         </div>
+        <hr>
         <div class="row">
-        
-        
-        <form>
+        <form id="chatInputs">
         <label for="name">Player Name:</label>
         <input id="name" type="text">
         <!-- <input type="submit" id="playerButt" value="Submit"> -->
@@ -59,35 +81,32 @@
         <input type="submit" id="chat" value="Submit">
         </form>
         
-    </div>
+    	</div>
 
-    
-    
-    <hr>
+    </div>  <!-- end column 2 -->
+</div>	<!-- end row main content -->
 
-    </div>  <!-- end row -->
-    
-<hr>
 
-    <div id="status">
+<!-- <hr> -->
+
+    <!-- <div id="status">
         <div id="rps">Selected image:</div>
 
         <div id="thisPlayer">Your Choice: None Selected</div>
-        <!-- <div id="otherPlayer"></div> -->
-    </div>
+    </div> -->
 
-    <button id="reset">Reset</button>
+    <!-- <button id="reset">Reset</button> -->
     
-    <div>
-        <p>Instructions:</p>
-        <p>Click reset to initialize database</p>
-        <p>Click on image to select rock, paper or scissors.</p>
-        <p>Click submit to enter your choice.</p>
-        <p>Enter name and message to chat with contender if any.</p>
+    <div class="row" id="inst">
+        <ul>Instructions:
+            <li>* Click on image to select rock, paper or scissors.</li>
+            <li>* Click submit to enter your choice.</li>
+            <li>* Enter name and message to parley with contender.</li>
+        </ul>
     </div>
 <!--  *************************************************************** -->
 
-
+</div> <!-- end wrapper -->
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script>
 
 <script type="text/javascript" src="assets/javascript/logic.js"></script>
